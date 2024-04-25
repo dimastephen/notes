@@ -7,6 +7,7 @@ import (
 	"github.com/alexedwards/scs/mysqlstore"
 	"github.com/alexedwards/scs/v2"
 	"github.com/dimastephen/snippetbox/internal/models"
+	"github.com/go-playground/form/v4"
 	_ "github.com/go-sql-driver/mysql"
 	"html/template"
 	"log"
@@ -19,8 +20,10 @@ type application struct {
 	errorLog       *log.Logger
 	infoLog        *log.Logger
 	snippets       *models.SnippetModel
+	users          *models.Usermodel
 	templateCache  map[string]*template.Template
 	sessionManager *scs.SessionManager
+	formDecoder    *form.Decoder
 }
 
 func main() {
@@ -50,7 +53,7 @@ func main() {
 	tlsConfig := &tls.Config{
 		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
 	}
-
+	formDecoder := form.NewDecoder()
 	//Создание объекта структуры application и сервера
 	app := &application{
 		errorLog:       errorLog,
@@ -58,6 +61,8 @@ func main() {
 		snippets:       &models.SnippetModel{DB: db},
 		templateCache:  templateCache,
 		sessionManager: sessionManager,
+		users:          &models.Usermodel{DB: db},
+		formDecoder:    formDecoder,
 	}
 	srv := &http.Server{
 		Addr:         *addr,
