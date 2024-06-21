@@ -65,13 +65,14 @@ func main() {
 		formDecoder:    formDecoder,
 	}
 	srv := &http.Server{
-		Addr:         *addr,
-		ErrorLog:     errorLog,
-		Handler:      app.routes(),
-		TLSConfig:    tlsConfig,
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  time.Second * 5,
-		WriteTimeout: time.Second * 10,
+		Addr:              *addr,
+		ErrorLog:          errorLog,
+		Handler:           app.routes(),
+		TLSConfig:         tlsConfig,
+		IdleTimeout:       time.Minute,
+		ReadHeaderTimeout: time.Second * 2,
+		ReadTimeout:       time.Second * 5,
+		WriteTimeout:      time.Second * 25,
 	}
 
 	infoLog.Printf("Starting server at %s", *addr)

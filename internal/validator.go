@@ -7,7 +7,8 @@ import (
 )
 
 type Validator struct {
-	FieldsErrors map[string]string
+	FieldsErrors   map[string]string
+	NonFieldErrors []string
 }
 
 var EmailRX = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
@@ -21,7 +22,7 @@ func Matches(value string, rx *regexp.Regexp) bool {
 }
 
 func (v *Validator) Valid() bool {
-	if len(v.FieldsErrors) == 0 {
+	if len(v.FieldsErrors) == 0 && len(v.NonFieldErrors) == 0 {
 		return true
 	} else {
 		return false
@@ -32,11 +33,14 @@ func (v *Validator) AddFieldError(key string, value string) {
 	if v.FieldsErrors == nil {
 		v.FieldsErrors = make(map[string]string)
 	}
-
 	_, exists := v.FieldsErrors[key]
 	if !exists {
 		v.FieldsErrors[key] = value
 	}
+}
+
+func (v *Validator) AddNonFieldError(str string) {
+	v.NonFieldErrors = append(v.NonFieldErrors, str)
 }
 
 func (v *Validator) CheckField(ok bool, key, message string) {
