@@ -81,11 +81,11 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	form.CheckField(validator.NotBlank(form.Title), "title", "This field cannot be blank")
 	form.CheckField(validator.MaxChars(form.Title, 100), "title", "This field cannot be more than 100 characters long")
 	form.CheckField(validator.NotBlank(form.Content), "content", "This field cannot be blank")
-	form.CheckField(validator.PermittedInt(form.Expires, 1, 7, 365), "expires", "This field must equal 1, 7 or 365")
+	form.CheckField(validator.PermittedValue(form.Expires, 1, 7, 365), "expires", "This field must equal 1, 7 or 365")
 
 	if !form.Valid() {
 		data := app.newTemplateData(r)
-		data.Form = form
+		data.Form = &form
 		app.render(w, http.StatusUnprocessableEntity, "create.html", data)
 		return
 	}
@@ -180,11 +180,24 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 		return
 	}
-	app.sessionManager.Put(r.Context(), "authentificatedUserID", id)
+	app.sessionManager.Put(r.Context(), "AuthentificatedUserID", id)
 	app.sessionManager.Put(r.Context(), "flash", "Logged in successfully")
 	http.Redirect(w, r, "/snippet/create", http.StatusSeeOther)
 }
 
 func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
+	err := app.sessionManager.RenewToken(r.Context())
+	if err != nil {
+		app.serverError(w, err)
+	}
 
+	app.sessionManager.Remove(r.Context(), "AuthentificatedUserID")
+	app.sessionManager.Put(r.Context(), "flash", "Logged out Succesfully")
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+
+}
+
+func ping(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("OK"))
 }

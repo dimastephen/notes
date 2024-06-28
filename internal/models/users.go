@@ -21,6 +21,12 @@ type Usermodel struct {
 	DB *sql.DB
 }
 
+type UserModelInterface interface {
+	Insert(name, email, password string) error
+	Authentificate(email, password string) (int, error)
+	Exists(id int) (bool, error)
+}
+
 func (m *Usermodel) Insert(name, email, password string) error {
 	hashed_password, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
@@ -64,5 +70,9 @@ func (m *Usermodel) Authentificate(email, password string) (int, error) {
 }
 
 func (m *Usermodel) Exists(id int) (bool, error) {
-	return false, nil
+	var exists bool
+
+	stmt := "SELECT EXISTS(SELECT true FROM users WHERE id=?)"
+	err := m.DB.QueryRow(stmt, id).Scan(&exists)
+	return exists, err
 }
